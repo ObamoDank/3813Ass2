@@ -1,0 +1,64 @@
+/* You can add global styles to this file, and also import other style files */
+html {
+    background-image: url("./assets/img/tree.JPG");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: rgb(13, 13, 13);
+    color: #cb7723;
+    font-family: 'Monotype Corsiva';
+}
+
+h1 {
+    font-family: 'Monotype Corsiva';
+    color: #e1ad01;
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+h2 {
+    text-align: center;
+}
+
+h3 {
+    font-size: 26px;
+}
+
+h4 {
+    font-size: 20px;
+}
+
+.inp {
+    border-radius: 4px;
+    background-color: #033500;
+    color: #4cbb17;
+    border-color: #e1ad01;
+    font-family: 'Monotype Corsiva';
+    font-size: 18px;
+}
+
+.button {
+    background-color: #bec49a; 
+    border-color: #4a4d3e
+}
+
+.op1 {
+    color: #4cbb17;
+}
+
+select {
+    background-color: #033500;
+    color: #4cbb17;
+    border-color: #e1ad01;
+    font-family: 'Monotype Corsiva';
+    font-size: 18px;
+}
+
+option {
+    color: #c7da46;
+}
+
+textarea {
+    resize: none;
+}

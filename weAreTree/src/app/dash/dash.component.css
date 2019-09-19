@@ -1,0 +1,193 @@
+body{
+    text-align: center;
+}
+
+form{
+    display: inline-block;
+}
+
+.dashboard {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.userForms{
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    max-width: 30rem;
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+}
+
+.groupForms{
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    max-width: 30rem;
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+}
+
+.channelForms{
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    max-width: 30rem;
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+}
+
+.listGroupChan {
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+    background-color: rgb(20, 20, 20);
+    opacity: 0.7;
+}
+
+.actualList {
+    display: flex;
+    justify-content: space-around;
+}
+
+.displayGroup {
+    display: block;
+}
+
+.chat {
+    width: 100%;
+    display: inline-block;
+    background-color: rgb(20, 20, 20);
+    max-width: 60rem;
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+    opacity: 0.7;
+    padding: 0% 4% 2% 4%;
+}
+
+.inGroup {
+    width: 90%;
+    display: inline-block;
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    max-width: 45rem;
+    border-color: #420d09; 
+    border-width:5px; 
+    border-style:double; 
+    border-radius: 20px;
+}
+
+.groupSeg {
+
+}
+
+/* Group section Top Div */
+.groupSegTop{
+    display: flex;
+    justify-content: space-between;
+}
+
+.groupTopLeft {
+    display: block;
+}
+
+.groupTopMid {
+    display: block;
+}
+
+.groupTopRight {
+    display: block;
+}
+
+/* Group section Middle Div */
+.groupSegMid {
+    display: flex;
+    justify-content: space-between;
+}
+
+.groupMidLeft {
+    display: block;
+    border-color: #420d09; 
+    border-width: 5px; 
+    border-style: double; 
+    border-radius: 20px;
+    padding: 1%;
+}
+
+.groupMidMid {
+    display: block;
+}
+
+.groupMidRight {
+    display: block;
+    border-color: #420d09; 
+    border-width: 5px; 
+    border-style: double; 
+    border-radius: 20px;
+    padding: 1%;
+}
+
+/* Group section Bottom Div */
+.groupSegBot {
+
+}
+
+.channelButtons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.inChannel {
+    width: 90%;
+    display: inline-block;
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    max-width: 45rem;
+    border-color: #420d09; 
+    border-width: 5px; 
+    border-style: double; 
+    border-radius: 20px;
+}
+
+.chatSeg {
+    display: flex;
+    justify-content: space-around;
+}
+
+.chatLeft {
+    display: block;
+}
+
+.chatMidLeft {
+    display: block;
+    background-color: #033500;
+    border-color: #e1ad01; 
+    border-width: 3px; 
+    border-style: double; 
+    border-radius: 10px;
+    max-height: 30rem;
+    height: 70%;
+}
+
+.chatRight {
+    display: block;
+}
+
+.chatBotRight {
+    display: block;
+    background-color: rgb(20, 20, 20);
+    padding: 5%;
+    border-color: #420d09; 
+    border-width: 5px; 
+    border-style: double; 
+    border-radius: 20px;
+}
