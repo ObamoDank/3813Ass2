@@ -4,27 +4,39 @@ const cors = require("cors");
 app.use(cors());
 const bodyparser = require("body-parser");
 const path = require("path");
+const MongoClient = require("mongodb").MongoClient;
+let ObjectID = require("mongodb").ObjectID;
 
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
-app.use(express.static(path.join(__dirname + '../weAreTree/dist/weAreTree')));
+// app.use(express.static(path.join(__dirname + '../weAreTree/dist/weAreTree')));
+const url = "mongodb://localhost:27017";
 
-require("./listen.js")(app, path);
-require("./routes/checkUser.js")(app, path);
-require("./routes/newUser.js")(app, path);
-require("./routes/destroyUser.js")(app, path);
-require("./routes/promoteUser.js")(app, path);
-require("./routes/fetchUser.js")(app, path);
-require("./routes/fetchRole.js")(app, path);
-require("./routes/fetchUsers.js")(app, path);
-require("./routes/newGroup.js")(app, path);
-require("./routes/destroyGroup.js")(app, path);
-require("./routes/fetchGroups.js")(app, path);
-require("./routes/newChannel.js")(app, path);
-require("./routes/destroyChannel.js")(app, path);
-require("./routes/inviteGroup.js")(app, path);
-require("./routes/revokeGroup.js")(app, path);
-require("./routes/inviteChannel.js")(app, path);
-require("./routes/revokeChannel.js")(app, path);
-require("./routes/newAssis.js")(app, path);
-require("./routes/newAdmin.js")(app, path);
+MongoClient.connect(url, { poolSize: 10, useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    if (err){
+        return console.log(err);
+    }
+
+    const dbName = "tree";
+    const db = client.db(dbName);
+
+    require("./listen.js")(app, db);
+    require("./routes/checkUser.js")(app, db);
+    require("./routes/newUser.js")(app, db);
+    require("./routes/destroyUser.js")(app, db);
+    require("./routes/promoteUser.js")(app, db);
+    require("./routes/fetchUser.js")(app, db);
+    require("./routes/fetchRole.js")(app, db);
+    require("./routes/fetchUsers.js")(app, db);
+    require("./routes/newGroup.js")(app, db);
+    require("./routes/destroyGroup.js")(app, db);
+    require("./routes/fetchGroups.js")(app, db);
+    require("./routes/newChannel.js")(app, db);
+    require("./routes/destroyChannel.js")(app, db);
+    require("./routes/inviteGroup.js")(app, db);
+    require("./routes/revokeGroup.js")(app, db);
+    require("./routes/inviteChannel.js")(app, db);
+    require("./routes/revokeChannel.js")(app, db);
+    require("./routes/newAssis.js")(app, db);
+    require("./routes/newAdmin.js")(app, db);
+});

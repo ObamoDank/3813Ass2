@@ -46,6 +46,7 @@ export class DashComponent implements OnInit {
 
   // Create User Variables
   newUser = "";
+  newPass = "";
   newEmail = "";
   newRole = "";
   createError = "";
@@ -135,21 +136,20 @@ export class DashComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   // Function Creates New User
-  createUser() {
+  async createUser() {
     this.resetErrors();
-    if (this.newUser && this.newEmail && this.newRole) {
+    if (this.newUser && this.newPass && this.newEmail && this.newRole) {
       let userObj = {
         "newUser": this.newUser,
+        "newPass": this.newPass,
         "newEmail": this.newEmail,
         "newRole": this.newRole,
       }
 
-      this.http.post<any>(BACKEND_URL + "/newUser", userObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/newUser", userObj).subscribe((data) => {
         console.log(data);
         if (!data.error) {
-          console.log(data);
-          this.users = data;
-          this.trimUsers();
+          this.fetchUsers();
         } else {
           this.serverErrorUser = data.error;
         }
@@ -161,16 +161,16 @@ export class DashComponent implements OnInit {
   }
 
   // Function Deletes User
-  destroyUser() {
+  async destroyUser() {
     this.resetErrors();
     if (this.killUser) {
       let userObj = { "username": this.killUser };
 
-      this.http.post<any>(BACKEND_URL + "/destroyUser", userObj).subscribe((data) => {
-        console.log(data)
-        this.users = data;
-        this.trimUsers();
+      await this.http.post<any>(BACKEND_URL + "/destroyUser", userObj).subscribe((data) => {
+        console.log(data);
+        this.fetchUsers();
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.killError = "...Just pick an option"
@@ -178,7 +178,7 @@ export class DashComponent implements OnInit {
   }
 
   //Function Grants New Role to User
-  promoteUser() {
+  async promoteUser() {
     this.resetErrors();
     if (this.boostUser && this.boostRole) {
       let userObj = {
@@ -186,12 +186,12 @@ export class DashComponent implements OnInit {
         "role": this.boostRole
       }
 
-      this.http.post<any>(BACKEND_URL + "/promoteUser", userObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/promoteUser", userObj).subscribe((data) => {
         console.log(data);
-        this.users = data.users;
-        this.groups = data.groups;
-        this.trimUsers();
+        this.fetchUsers();
+        this.fetchGroups();
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.promoteError = "...Just pick an option"
@@ -199,7 +199,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function Creates New Group
-  createGroup() {
+  async createGroup() {
     this.resetErrors();
     if (this.newGroup) {
       let groupObj = {
@@ -208,11 +208,10 @@ export class DashComponent implements OnInit {
         "user": this.username
       }
 
-      this.http.post<any>(BACKEND_URL + "/newGroup", groupObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/newGroup", groupObj).subscribe((data) => {
         console.log(data);
         if (!data.error) {
-          this.groups = data;
-          this.trimGroups();
+          this.fetchGroups();
         } else {
           this.serverErrorGroup = data.error;
         }
@@ -224,24 +223,36 @@ export class DashComponent implements OnInit {
   }
 
   // Function Destroys Group
-  destroyGroup() {
+  async destroyGroup() {
     this.resetErrors();
     if (this.killGroup) {
+      if (this.currentGroup == this.killGroup) {
+        this.currentGroup = "";
+        this.isInGroup = false;
+        this.currentChannel = "";
+        this.isInChannel = false;
+      }
       let groupObj = { "name": this.killGroup };
 
-      this.http.post<any>(BACKEND_URL + "/destroyGroup", groupObj).subscribe((data) => {
-        console.log(data);
-        this.groups = data;
-        this.trimGroups();
+      await this.http.post<any>(BACKEND_URL + "/destroyGroup", groupObj).subscribe((data) => {
+        this.fetchGroups();
         this.resetValues();
+        if (this.isInGroup) {
+          for (let i = 0; i < this.groups.length; i++) {
+            if (this.currentGroup == this.groups[i].name) {
+              this.groupData = this.groups[i];
+              console.log(this.groupData);
+            }
+          }
+        }
       });
     } else {
-      this.gKillError = "...Just pick a room mate";
+      this.gKillError = "...Just pick a group mate";
     }
   }
 
   // Function Creates new Channel
-  createChannel() {
+  async createChannel() {
     this.resetErrors();
     if (this.newChanGroup && this.newChan) {
       let chanObj = {
@@ -249,11 +260,11 @@ export class DashComponent implements OnInit {
         "channelName": this.newChan
       }
 
-      this.http.post<any>(BACKEND_URL + "/newChannel", chanObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/newChannel", chanObj).subscribe((data) => {
         console.log(data);
         if (!data.error) {
-          this.groups = data;
-          this.trimGroups();
+          this.fetchGroups();
+          this.getBoth();
         } else {
           this.serverErrorChannel = data.error;
         }
@@ -265,18 +276,21 @@ export class DashComponent implements OnInit {
   }
 
   // Function Destroys Channel
-  destroyChannel() {
+  async destroyChannel() {
     this.resetErrors();
     if (this.killChanGroup && this.killChan) {
+      if (this.currentChannel == this.killChan) {
+        this.currentChannel = "";
+        this.isInChannel = false;
+      }
       let chanObj = {
         "channelGroup": this.killChanGroup,
         "channelName": this.killChan
       };
 
-      this.http.post<any>(BACKEND_URL + "/destroyChannel", chanObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/destroyChannel", chanObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups();
         this.resetValues();
       });
     } else {
@@ -285,7 +299,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function Grants Access Rights To Group
-  inviteGroup() {
+  async inviteGroup() {
     this.resetErrors();
     if (this.inviteGroupName && this.inviteGroupUser) {
       let invObj = {
@@ -298,11 +312,11 @@ export class DashComponent implements OnInit {
         invObj.role = "user";
       }
 
-      this.http.post<any>(BACKEND_URL + "/inviteGroup", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/inviteGroup", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups()
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.iGroupError = "...Just pick a dude mate";
@@ -310,7 +324,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function grants access rights to group from within group
-  inviteGroupInGroup() {
+  async inviteGroupInGroup() {
     this.resetErrors();
     if (this.currentGroup && this.inviteGroupUserName) {
       let invObj = {
@@ -319,16 +333,10 @@ export class DashComponent implements OnInit {
         "role": "user"
       };
 
-      this.http.post<any>(BACKEND_URL + "/inviteGroup", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/inviteGroup", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        for (let i = 0; i < this.groups.length; i++) {
-          if (this.currentGroup == this.groups[i].name) {
-            this.groupData = this.groups[i];
-            console.log(this.groupData);
-          }
-        }
-        this.trimGroups();
+        this.fetchGroups();
+        this.getBoth();
         this.resetValues();
       });
     } else {
@@ -337,7 +345,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function Revokes Access rights to Group
-  revokeGroup() {
+  async revokeGroup() {
     this.resetErrors();
     if (this.revokeGroupName && this.revokeGroupUser) {
       let invObj = {
@@ -346,11 +354,11 @@ export class DashComponent implements OnInit {
         "role": this.inviteGroupRole
       };
 
-      this.http.post<any>(BACKEND_URL + "/revokeGroup", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/revokeGroup", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups();
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.rGroupError = "...Just pick a dude mate";
@@ -358,7 +366,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function Grants Access Rights To Channel
-  inviteChannel() {
+  async inviteChannel() {
     this.resetErrors();
     if (this.inviteChanGroupName && this.inviteChanName && this.inviteChanUser) {
       let invObj = {
@@ -367,11 +375,11 @@ export class DashComponent implements OnInit {
         "username": this.inviteChanUser
       };
 
-      this.http.post<any>(BACKEND_URL + "/inviteChannel", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/inviteChannel", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups();
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.iChanError = "...Just pick a dude mate";
@@ -379,7 +387,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function adds new user to channel from within that channel
-  inviteChannelInChannel() {
+  async inviteChannelInChannel() {
     this.resetErrors();
     if (this.currentChannel && this.currentGroup && this.inviteChannelUserName) {
       let invObj = {
@@ -388,10 +396,10 @@ export class DashComponent implements OnInit {
         "username": this.inviteChannelUserName
       };
 
-      this.http.post<any>(BACKEND_URL + "/inviteChannel", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/inviteChannel", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups();
+        this.getBoth();
         this.resetValues();
       });
     } else {
@@ -400,7 +408,7 @@ export class DashComponent implements OnInit {
   }
 
   //Function Revokes Access rights to channel
-  revokeChannel() {
+  async revokeChannel() {
     this.resetErrors();
     if (this.revokeChanGroupName && this.revokeChanName && this.revokeChanUser) {
       let invObj = {
@@ -409,11 +417,11 @@ export class DashComponent implements OnInit {
         "username": this.revokeChanUser
       };
 
-      this.http.post<any>(BACKEND_URL + "/revokeChannel", invObj).subscribe((data) => {
+      await this.http.post<any>(BACKEND_URL + "/revokeChannel", invObj).subscribe((data) => {
         console.log(data);
-        this.groups = data;
-        this.trimGroups();
+        this.fetchGroups();
         this.resetValues();
+        this.getBoth();
       });
     } else {
       this.rChanError = "...Just pick a dude mate";
@@ -421,7 +429,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function promotes user to Admin of Current Room
-  newAdminG() {
+  async newAdminG() {
     this.resetErrors();
     if (this.newAdminName) {
       let adObj = {
@@ -429,14 +437,11 @@ export class DashComponent implements OnInit {
         "group": this.currentGroup
       }
 
-      this.http.post<any>(BACKEND_URL + "/newAdmin", adObj).subscribe((data) => {
-        console.log(data);
-        this.groups = data;
-        this.trimGroups();
-        for (let i = 0; i < this.groups.length; i++) {
-          if (this.currentGroup == this.groups[i].name) {
-            this.groupData = this.groups[i];
-          }
+      await this.http.post<any>(BACKEND_URL + "/newAdmin", adObj).subscribe(async (data) => {
+        await this.fetchGroups();
+        await this.getCurrentGroup();
+        if (this.isInChannel) {
+          await this.getCurrentChannel();
         }
       });
       this.resetValues();
@@ -446,7 +451,7 @@ export class DashComponent implements OnInit {
   }
 
   // Function promotes user to Assis of Current Room
-  newAssis() {
+  async newAssis() {
     this.resetErrors();
     if (this.newAssisName) {
       let assObj = {
@@ -454,15 +459,12 @@ export class DashComponent implements OnInit {
         "group": this.currentGroup
       }
 
-      this.http.post<any>(BACKEND_URL + "/newAssis", assObj).subscribe((data) => {
-        console.log(data);
-        this.groups = data.groups;
-        this.trimGroups();
-        this.users = data.users;
-        for (let i = 0; i < this.groups.length; i++) {
-          if (this.currentGroup == this.groups[i].name) {
-            this.groupData = this.groups[i];
-          }
+      this.http.post<any>(BACKEND_URL + "/newAssis", assObj).subscribe(async (data) => {
+        await this.fetchGroups();
+        await this.fetchUsers();
+        await this.getCurrentGroup();
+        if (this.isInChannel) {
+          await this.getCurrentChannel();
         }
       });
       this.resetValues();
@@ -507,6 +509,7 @@ export class DashComponent implements OnInit {
     if (channelO) {
       this.isInChannel = true;
       this.currentChannel = channelO;
+      this.getBoth();
       this.resetValues();
     }
     if (this.goToChannel) {
@@ -515,9 +518,42 @@ export class DashComponent implements OnInit {
       }
       this.isInChannel = true;
       this.currentChannel = this.goToChannel;
+      this.getCurrentChannel();
       this.resetValues();
     } else {
       this.goChannelError = "Pick a Channel Mate.."
+    }
+  }
+
+  // Function retrieves Data about the current channel
+  async getCurrentChannel() {
+    for (let i = 0; i < this.groups.length; i++) {
+      for (let j = 0; j < this.groups[i].channels.length; j++) {
+        if (this.currentChannel == this.groups[i].channels[j].name) {
+          this.channel = this.groups[i].channels[j];
+          console.log(this.channel);
+        }
+      }
+    }
+  }
+
+  // Function retrieves Data about the current group
+  async getCurrentGroup() {
+    for (let i = 0; i < this.groups.length; i++) {
+      if (this.currentGroup == this.groups[i].name) {
+        this.groupData = this.groups[i];
+        console.log(this.groupData);
+      }
+    }
+  }
+
+  // Function retrieves both group data and channel data
+  async getBoth(){
+    if (this.isInGroup) {
+      this.getCurrentGroup()
+      if (this.isInChannel) {
+         this.getCurrentChannel();
+      }
     }
   }
 
@@ -529,6 +565,7 @@ export class DashComponent implements OnInit {
     }
     this.isInGroup = false;
     this.currentGroup = "";
+    this.groupData = [];
     if (this.isRoomAdmin || this.isRoomAssis) {
       this.isRoomAdmin = false;
       this.isRoomAssis = false;
@@ -540,6 +577,7 @@ export class DashComponent implements OnInit {
   leaveChannel() {
     this.isInChannel = false;
     this.currentChannel = "";
+    this.channel = [];
     this.resetValues();
   }
 
@@ -550,36 +588,36 @@ export class DashComponent implements OnInit {
   }
 
   // Function returns Current User's data
-  fetchUser() {
+  async fetchUser() {
     let userObj = { "username": this.username };
-    this.http.post<any>(BACKEND_URL + "/fetchUser", userObj).subscribe((data) => {
+    await this.http.post<any>(BACKEND_URL + "/fetchUser", userObj).subscribe((data) => {
       console.log(data)
       this.user = data;
     });
   }
 
   // Functions returns the Current User's role
-  fetchRole() {
+  async fetchRole() {
     let userObj = { "username": this.username };
-    this.http.post<any>(BACKEND_URL + "/fetchRole", userObj).subscribe((data) => {
+    await this.http.post<any>(BACKEND_URL + "/fetchRole", userObj).subscribe((data) => {
       this.userRole = data.role;
       console.log(this.userRole);
     });
   }
 
   // Function returns a list of all users
-  fetchUsers() {
+  async fetchUsers() {
     let userObj = { "username": this.username };
-    this.http.post<any>(BACKEND_URL + "/fetchUsers", userObj).subscribe((data) => {
+    await this.http.post<any>(BACKEND_URL + "/fetchUsers", userObj).subscribe((data) => {
       this.users = data;
       this.trimUsers();
     });
   }
 
   // Function returns a list of all groups in the server and trims groups which are irrelevant to Current User
-  fetchGroups() {
+  async fetchGroups() {
     let groupObj = { "message": "G'day maite could I get some groups over 'ere" };
-    this.http.post<any>(BACKEND_URL + "/fetchGroups", groupObj).subscribe((data) => {
+    await this.http.post<any>(BACKEND_URL + "/fetchGroups", groupObj).subscribe((data) => {
       this.groups = data;
       this.trimGroups();
       console.log(this.groups)
@@ -587,12 +625,12 @@ export class DashComponent implements OnInit {
   }
 
   // Function fetches all necessary data about groups and users from server
-  ngOnInit() {
+  async ngOnInit() {
     this.username = localStorage.getItem("username");
-    this.fetchUser();
-    this.fetchRole();
-    this.fetchUsers();
-    this.fetchGroups();
+    await this.fetchUser();
+    await this.fetchRole();
+    await this.fetchUsers();
+    await this.fetchGroups();
     this.resetErrors();
     this.resetValues();
   }
@@ -671,6 +709,7 @@ export class DashComponent implements OnInit {
     this.goToGroup = "";
     this.goToChannel = "";
     this.newUser = "";
+    this.newPass = "";
     this.newEmail = "";
     this.newRole = "";
     this.killUser = "";
@@ -695,5 +734,8 @@ export class DashComponent implements OnInit {
     this.inviteChanUser = "";
     this.inviteGroupUserName = "";
     this.inviteChannelUserName = "";
+    this.revokeChanGroupName = "";
+    this.revokeChanName = "";
+    this.revokeChanUser = "";
   }
 }

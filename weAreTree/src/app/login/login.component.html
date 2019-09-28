@@ -3,7 +3,11 @@
   <h2>Login Here</h2>
 
   <form>
-    <input class="inp" type="text" [(ngModel)]="username" name="username" id="username" placeholder="username"><br><br>
+    <input class="inp" type="text" [(ngModel)]="username" name="username" id="username" placeholder="Username"><br><br>
+    <input class="inp" type="text" [(ngModel)]="password" name="password" id="password" placeholder="Password"><br><br>
     <input class="button" type="button" value="Login" (click)="login()">
-  </form>
+  </form><br><br>
+  <div *ngIf="errorMsg">
+    <h4>{{errorMsg}}</h4>
+  </div>
 </body>

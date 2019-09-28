@@ -11,6 +11,8 @@
         <Form>
           <input class="inp" type="text" [(ngModel)]="newUser" name="newUser" id="newUser"
             placeholder="Username" /><br><br>
+          <input class="inp" type="text" [(ngModel)]="newPass" name="newPass" id="newPass"
+            placeholder="Password" /><br><br>
           <input class="inp" type="text" [(ngModel)]="newEmail" name="newEmail" id="newEmail"
             placeholder="Email" /><br><br>
           <select [(ngModel)]="newRole" name="newRole" required>
@@ -662,13 +664,11 @@
               <form>
                 <select [(ngModel)]="inviteChannelUserName" name="inviteChannelUserName">
                   <option class="op1" value="" selected>Select User</option>
-                  <ng-container *ngFor="let c of channel">
-                    <ng-container *ngIf="c.name == currentChannel">
-                      <ng-container *ngFor="let u of users">
-                        <option *ngIf="c.access.includes(u.username)">
-                          {{u.username}}
-                        </option>
-                      </ng-container>
+                  <ng-container *ngIf="channel.name == currentChannel">
+                    <ng-container *ngFor="let u of users">
+                      <option *ngIf="!channel.access.includes(u.username) && groupData.users.includes(u.username)">
+                        {{u.username}}
+                      </option>
                     </ng-container>
                   </ng-container>
                 </select><br><br>
@@ -681,8 +681,8 @@
             </ng-container>
           </div><br>
           <div class="chatBotRight">
-            <h3>Group Users</h3>
-            <ng-container *ngFor="let u of groupData.users">
+            <h3>Channel Users</h3>
+            <ng-container *ngFor="let u of channel.access">
               <p>{{u}}</p>
             </ng-container>
           </div>

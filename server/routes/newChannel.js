@@ -1,9 +1,7 @@
-const fs = require("fs");
-
 // Module adds specified channel to specified group. First checks to see if channel
 // already exists.
 
-module.exports = function (app, path) {
+module.exports = function (app, db) {
     app.post("/newChannel", function (req, res) {
         if (!req.body) {
             return res.sendstatus(400);
@@ -11,40 +9,26 @@ module.exports = function (app, path) {
 
         let newChannel = {
             "name": req.body.channelName,
+            "group": req.body.channelGroup,
             "access": []
         }
         let channelExists = false;
-        let group = req.body.channelGroup;
-        let groups = [];
 
         console.log("Made it to Create Channel..Ice cold..");
-        fs.readFile("./data.json", "utf-8", function (err, data) {
-            if (err) {
-                throw err;
-            }
-            let allData = JSON.parse(data);
-            for (let i = 0; i < allData.groups.length; i++) {
-                if (allData.groups[i].name == group) {
-                    for (let j = 0; j < allData.groups[i].channels.length; j++) {
-                        if (allData.groups[i].channels[j].name == newChannel.name) {
-                            channelExists = true;
-                        }
-                    }
-                    if (!channelExists) {
-                        allData.groups[i].channels.push(newChannel);
-                    } else {
-                        return res.send({ error: "Oy Channel Exists ay Brah" });
-                    }
+        const channelData = db.collection("channels");
+        channelData.find({}).toArray(async (err, channels) => {
+            for (let i = 0; i < channels.length; i++) {
+                if (channels[i].name == newChannel.name && channels[i].group == newChannel.group) {
+                    channelExists = true;
                 }
             }
-            let allDataJson = JSON.stringify(allData);
-            groups = allData.groups;
-            fs.writeFile("./data.json", allDataJson, "utf-8", function (err) {
-                if (err) {
-                    throw err;
-                }
-            });
-            res.send(groups);
+            if (!channelExists) {
+                await channelData.insertOne(newChannel);
+                res.send({ msg: "New Channel Created" });
+            }
+            else {
+                res.send({ error: "Channel exists breh" });
+            }
         });
     });
 }

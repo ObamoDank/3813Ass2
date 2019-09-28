@@ -13,23 +13,28 @@ const BACKEND_URL = "http://localhost:3000";
 export class LoginComponent implements OnInit {
 
   username = "";
+  password = "";
   access = false;
-  errorMsg = "Nah mate you aren't real";
+  errorMsg: String;
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient) { }
 
 
   // Function provides user access to dashboard component
-  login(){
-    let userObj = {username: this.username};
+  login() {
+    let userObj = { 
+      username: this.username,
+      password: this.password
+    };
 
-    this.http.post<any>(BACKEND_URL + "/checkUser", userObj).subscribe((data) =>{
-      if(data){
+    this.http.post<any>(BACKEND_URL + "/checkUser", userObj).subscribe((data) => {
+      if (data) {
         this.access = true;
         localStorage.setItem("username", this.username);
         this.router.navigateByUrl("/dash")
-      }else{
+      } else {
         this.access = false;
+        this.errorMsg = "Nah mate you aren't real";
       }
     })
   }
