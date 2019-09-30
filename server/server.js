@@ -1,17 +1,37 @@
 const express = require("express");
 const app = express();
+const whitelist = ['http://localhost:4200'];
+const corsOptions = {
+  credentials: true, // This is important.
+  origin: (origin, callback) => {
+    if(whitelist.includes(origin))
+      return callback(null, true)
+
+      callback(new Error('Not allowed by CORS'));
+  }
+}
 const cors = require("cors");
 const bodyparser = require("body-parser");
-const path = require("path");
 const MongoClient = require("mongodb").MongoClient;
 let ObjectID = require("mongodb").ObjectID;
-let http = require("http").Server(app);
+const http = require("http").Server(app);
 const io = require("socket.io")(http);
 const sockets = require("./socket.js");
+io.set('origins', 'http://localhost:4200');
 
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 app.use(cors());
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT ,DELETE");
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    res.header('Access-Control-Allow-Credentials', true);
+    next(); 
+}); 
 
 // app.use(express.static(path.join(__dirname + '../weAreTree/dist/weAreTree')));
 const url = "mongodb://localhost:27017";
@@ -24,8 +44,7 @@ MongoClient.connect(url, { poolSize: 10, useNewUrlParser: true, useUnifiedTopolo
     const db = client.db(dbName);
 
     sockets.connect(app, io, db);
-
-    require("./listen.js")(app, db);
+    require("./listen.js")(http);
     require("./routes/checkUser.js")(app, db);
     require("./routes/newUser.js")(app, db);
     require("./routes/destroyUser.js")(app, db);
@@ -44,4 +63,6 @@ MongoClient.connect(url, { poolSize: 10, useNewUrlParser: true, useUnifiedTopolo
     require("./routes/revokeChannel.js")(app, db);
     require("./routes/newAssis.js")(app, db);
     require("./routes/newAdmin.js")(app, db);
+    require("./routes/fetchMessages.js")(app, db);
+
 });

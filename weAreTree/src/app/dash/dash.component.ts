@@ -17,6 +17,11 @@ export class DashComponent implements OnInit {
   // Socket Information
   private socket;
 
+  // Messaging Info
+  newMessage = "";
+  roomMessages = [];
+  newMessageError = "";
+
   // User Info
   username;
   userRole = "";
@@ -42,6 +47,7 @@ export class DashComponent implements OnInit {
   // Data
   users = [];
   groups = [];
+  messages = [];
 
 
   // Room Data
@@ -515,6 +521,9 @@ export class DashComponent implements OnInit {
       this.isInChannel = true;
       this.currentChannel = channelO;
       this.getBoth();
+      this.roomMessages = [];
+      this.trimMessages();
+      this.socketService.joinRoom({"group": this.currentGroup, "channel": this.currentChannel});
       this.resetValues();
     }
     if (this.goToChannel) {
@@ -524,6 +533,9 @@ export class DashComponent implements OnInit {
       this.isInChannel = true;
       this.currentChannel = this.goToChannel;
       this.getCurrentChannel();
+      this.roomMessages = [];
+      this.trimMessages();
+      this.socketService.joinRoom({"group": this.currentGroup, "channel": this.currentChannel});
       this.resetValues();
     } else {
       this.goChannelError = "Pick a Channel Mate.."
@@ -553,11 +565,11 @@ export class DashComponent implements OnInit {
   }
 
   // Function retrieves both group data and channel data
-  async getBoth(){
+  async getBoth() {
     if (this.isInGroup) {
       this.getCurrentGroup()
       if (this.isInChannel) {
-         this.getCurrentChannel();
+        this.getCurrentChannel();
       }
     }
   }
@@ -590,6 +602,25 @@ export class DashComponent implements OnInit {
   logout() {
     localStorage.clear()
     this.router.navigateByUrl("/");
+  }
+
+  // Function sends message
+  chat() {
+    this.resetErrors();
+    if (this.newMessage) {
+      let messageObj = {
+        "group": this.currentGroup,
+        "channel": this.currentChannel,
+        "user": this.username,
+        "message": this.newMessage
+      }
+      
+
+      this.resetValues();
+    } else {
+      this.newMessageError = "No Message...";
+    }
+
   }
 
   // Function returns Current User's data
@@ -629,6 +660,15 @@ export class DashComponent implements OnInit {
     });
   }
 
+  async fetchMessages() {
+    let messageObj = { "message": "G'day maite could I get some messages over 'ere" };
+    await this.http.post<any>(BACKEND_URL + "/fetchGroups", messageObj).subscribe((data) => {
+      this.messages = data;
+      this.trimMessages();
+      console.log(this.messages)
+    });
+  }
+
   // Function fetches all necessary data about groups and users from server
   async ngOnInit() {
     this.username = localStorage.getItem("username");
@@ -637,6 +677,7 @@ export class DashComponent implements OnInit {
     await this.fetchRole();
     await this.fetchUsers();
     await this.fetchGroups();
+    await this.fetchMessages();
     this.resetErrors();
     this.resetValues();
   }
@@ -675,6 +716,15 @@ export class DashComponent implements OnInit {
     }
   }
 
+  // Function isolates messages belonging to a specific room
+  trimMessages(){
+    for (let i = 0; i < this.messages.length; i++){
+      if(this.messages[i].group == this.currentGroup && this.messages[i].channel == this.currentChannel){
+        this.roomMessages.push(this.messages[i]);
+      }
+    }
+  }
+
   // Function sets Super Admin values to highest privilege in each room
   IAmSuper() {
     if (this.userRole == 'super') {
@@ -706,7 +756,9 @@ export class DashComponent implements OnInit {
     this.nAdminError = "";
     this.iGroupUserError = "";
     this.iInGroupError = "";
-    this.iInChannelError = ""
+    this.iInChannelError = "";
+    this.newMessageError = "";
+
   }
 
 
@@ -743,8 +795,9 @@ export class DashComponent implements OnInit {
     this.revokeChanGroupName = "";
     this.revokeChanName = "";
     this.revokeChanUser = "";
+    this.newMessage = "";
   }
 
   // Socket Services
-  
+
 }
