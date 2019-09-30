@@ -3,6 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router'
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { SocketsService } from '../service/sockets.service';
+
 
 const BACKEND_URL = "http://localhost:3000";
 
@@ -12,6 +14,9 @@ const BACKEND_URL = "http://localhost:3000";
   styleUrls: ['./dash.component.css']
 })
 export class DashComponent implements OnInit {
+  // Socket Information
+  private socket;
+
   // User Info
   username;
   userRole = "";
@@ -133,7 +138,7 @@ export class DashComponent implements OnInit {
   serverErrorGroup = "";
   serverErrorChannel = "";
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private socketService: SocketsService) { }
 
   // Function Creates New User
   async createUser() {
@@ -627,6 +632,7 @@ export class DashComponent implements OnInit {
   // Function fetches all necessary data about groups and users from server
   async ngOnInit() {
     this.username = localStorage.getItem("username");
+    this.socketService.initSocket();
     await this.fetchUser();
     await this.fetchRole();
     await this.fetchUsers();
@@ -738,4 +744,7 @@ export class DashComponent implements OnInit {
     this.revokeChanName = "";
     this.revokeChanUser = "";
   }
+
+  // Socket Services
+  
 }

@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { DashComponent } from './dash/dash.component';
+import { SocketsService } from './service/sockets.service';
 
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -23,7 +24,7 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [SocketsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
