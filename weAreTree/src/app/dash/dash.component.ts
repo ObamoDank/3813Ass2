@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { SocketsService } from '../service/sockets.service';
+import { ImgUploadServiceService } from '../service/img-upload-service.service';
 
 
 const BACKEND_URL = "http://localhost:3000";
@@ -16,6 +17,14 @@ const BACKEND_URL = "http://localhost:3000";
 export class DashComponent implements OnInit {
   // Socket Information
   private socket;
+  notice = "";
+  oldLocation = {};
+
+  //Image Uploading
+  chatFile = null;
+  userFile = null;
+  chatPath = "";
+  userPath = "";
 
   // Messaging Info
   newMessage = "";
@@ -144,7 +153,7 @@ export class DashComponent implements OnInit {
   serverErrorGroup = "";
   serverErrorChannel = "";
 
-  constructor(private http: HttpClient, private router: Router, private socketService: SocketsService) { }
+  constructor(private http: HttpClient, private router: Router, private socketService: SocketsService, private imgUploadService: ImgUploadServiceService) { }
 
   // Function Creates New User
   async createUser() {
@@ -516,26 +525,37 @@ export class DashComponent implements OnInit {
   // Function allows user to join Channel
   joinChannel(channelO) {
     this.resetErrors();
-    console.log(channelO);
     if (channelO) {
+      this.socketService.leaveRoom(this.oldLocation, this.username)
+      let location = {
+        "group": this.currentGroup,
+        "channel": channelO
+      }
+      this.oldLocation = location;
       this.isInChannel = true;
       this.currentChannel = channelO;
       this.getBoth();
       this.roomMessages = [];
       this.trimMessages();
-      this.socketService.joinRoom({"group": this.currentGroup, "channel": this.currentChannel});
+      this.socketService.joinRoom(location, this.username);
       this.resetValues();
     }
     if (this.goToChannel) {
       if (!this.isInGroup || this.currentGroup != this.goToGroup) {
         this.joinGroup();
       }
+      this.socketService.leaveRoom(this.oldLocation, this.username)
+      let location = {
+        "group": this.currentGroup,
+        "channel": this.goToChannel
+      }
+      this.oldLocation = location;
       this.isInChannel = true;
       this.currentChannel = this.goToChannel;
       this.getCurrentChannel();
       this.roomMessages = [];
       this.trimMessages();
-      this.socketService.joinRoom({"group": this.currentGroup, "channel": this.currentChannel});
+      this.socketService.joinRoom(location, this.username);
       this.resetValues();
     } else {
       this.goChannelError = "Pick a Channel Mate.."
@@ -592,9 +612,16 @@ export class DashComponent implements OnInit {
 
   // Function Leaves Current Room
   leaveChannel() {
+    let location = {
+      "group": this.currentGroup,
+      "channel": this.currentChannel
+    }
     this.isInChannel = false;
     this.currentChannel = "";
     this.channel = [];
+    this.roomMessages = [];
+    this.oldLocation = {};
+    this.socketService.leaveRoom(location, this.username)
     this.resetValues();
   }
 
@@ -612,10 +639,13 @@ export class DashComponent implements OnInit {
         "group": this.currentGroup,
         "channel": this.currentChannel,
         "user": this.username,
-        "message": this.newMessage
+        "msg": this.newMessage
       }
-      
-
+      let location = {
+        "group": this.currentGroup,
+        "channel": this.currentChannel
+      }
+      this.socketService.newMessage(messageObj, location);
       this.resetValues();
     } else {
       this.newMessageError = "No Message...";
@@ -662,7 +692,7 @@ export class DashComponent implements OnInit {
 
   async fetchMessages() {
     let messageObj = { "message": "G'day maite could I get some messages over 'ere" };
-    await this.http.post<any>(BACKEND_URL + "/fetchGroups", messageObj).subscribe((data) => {
+    await this.http.post<any>(BACKEND_URL + "/fetchMessages", messageObj).subscribe((data) => {
       this.messages = data;
       this.trimMessages();
       console.log(this.messages)
@@ -673,6 +703,13 @@ export class DashComponent implements OnInit {
   async ngOnInit() {
     this.username = localStorage.getItem("username");
     this.socketService.initSocket();
+    this.socketService.getMessage((msg) => {
+      this.messages.push(msg);
+      this.roomMessages.push(msg);
+    });
+    this.socketService.notice((msg) => {
+      this.notice = msg;
+    });
     await this.fetchUser();
     await this.fetchRole();
     await this.fetchUsers();
@@ -692,6 +729,7 @@ export class DashComponent implements OnInit {
       }
     }
   }
+
 
   // Function takes list of all groups in database and removes groups which are
   // irrelevant to current user
@@ -717,12 +755,14 @@ export class DashComponent implements OnInit {
   }
 
   // Function isolates messages belonging to a specific room
-  trimMessages(){
-    for (let i = 0; i < this.messages.length; i++){
-      if(this.messages[i].group == this.currentGroup && this.messages[i].channel == this.currentChannel){
+  trimMessages() {
+    for (let i = 0; i < this.messages.length; i++) {
+      if (this.messages[i].group == this.currentGroup && this.messages[i].channel == this.currentChannel) {
         this.roomMessages.push(this.messages[i]);
       }
     }
+    console.log(this.roomMessages);
+    console.log(this.messages);
   }
 
   // Function sets Super Admin values to highest privilege in each room
@@ -798,6 +838,31 @@ export class DashComponent implements OnInit {
     this.newMessage = "";
   }
 
-  // Socket Services
+  onChatFileSelected(event) {
+    console.log(event);
+    this.chatFile = event.target.files[0];
+  }
 
+  uploadChat() {
+    const fd = new FormData()
+    fd.append('image', this.chatFile, this.chatFile.name);
+    this.imgUploadService.imgUpload(fd).subscribe(res => {
+      this.chatPath = BACKEND_URL + "/images/" + res.data.filename;
+      console.log(res.data.filename + ' , ' + res.data.size);
+    })
+  }
+
+  onUserFileSelected(event) {
+    console.log(event);
+    this.chatFile = event.target.files[0];
+  }
+
+  uploadUser() {
+    const fd = new FormData()
+    fd.append('image', this.userFile, this.userFile.name);
+    this.imgUploadService.imgUpload(fd).subscribe(res => {
+      this.userPath = BACKEND_URL + res.data.filename;
+      console.log(res.data.filename + ' , ' + res.data.size);
+    });
+  }
 }

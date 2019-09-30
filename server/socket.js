@@ -11,60 +11,67 @@ module.exports = {
         await messageData.find({}).toArray((err, messageDB) => {
             messages = messageDB;
         })
-        socketChannels = [];
+        whoIsWhere = [];
 
         io.on("connection", (socket) => {
             console.log("user connection on: " + socket.id);
 
             // Function recieves and emits message before adding to database
-            socket.on("message", async (messageObj) => {
-                for (i = 0; i < socketRoom.length; i++) {
-                    if (socketRoom[i][0] == socket.id) {
-                        io.to(socketRoom[i][1]).emit('message', message);
+            socket.on("message", (messageObj, location) => {
+                for (i = 0; i < whoIsWhere.length; i++) {
+                    if (whoIsWhere[i].id == socket.id) {
+                        io.to(location.channel).emit('message', messageObj);
                     }
                 }
-                await messageData.insertOne(messageObj);
-                console.log(socketRoom);
-                console.log(socketRoomNum);
+                messageData.insertOne(messageObj);
             });
 
-            socket.on("joinRoom", function (room) {
-                socket.join(room, function () {
-                    console.log(socketRoom);
-                    console.log(socketRoomNum);
-                    let inRoomSocketArray = false;
-
-                    for (let i = 0; i < socketRoom.length; i++) {
-                        if (socketRoom[i][0] == socket.id) {
-                            socketRoom[i][1] = room;
-                            inRoomSocketArray = true;
+            socket.on("joinRoom", function (room, user) {
+                socket.join(room.channel, function () {
+                    let inChannelArray = false;
+                    console.log(user);
+                    for (let i = 0; i < whoIsWhere.length; i++) {
+                        if (whoIsWhere[i].id == socket.id) {
+                            whoIsWhere[i].group = room.group;
+                            whoIsWhere[i].channel = room.channel;
+                            inChannelArray = true;
                         }
                     }
-                    console.log(socketRoom);
-                    console.log(socketRoomNum);
-                    if (inRoomSocketArray == false) {
+                    if (inChannelArray == false) {
                         //add socket id/room record
-                        socketRoom.push([socket.id, room]);
-                        let hasRoomNum = false;
-                        //recalculate number of users in a room
-                        for (let j = 0; j < socketRoomNum.length; j++) {
-                            if (socketRoomNum[j][0] == room) {
-                                socketRoomNum[j][1] = socketRoomNum[j][1] + 1;
-                                hasRoomNum = true;
-                            }
-                        }
-                        console.log(socketRoom);
-                        console.log(socketRoomNum);
-                        // start tracking number of users in a room if it has not yet been done
-                        if (hasRoomNum == false) {
-                            socketRoomNum.push([room, 1]);
-                        }
+                        whoIsWhere.push({
+                            id: socket.id,
+                            group: room.group,
+                            channel: room.channel,
+                        });
                     }
-                    io.in(room).emit("notice", "A new user has joined");
+
+                    io.to(room.channel).emit("notice", user + " has joined");
                 });
-                console.log(socketRoom);
-                console.log(socketRoomNum);
-                return io.in(room).emit('joined', room);
+            });
+
+            socket.on("leaveRoom", function (room, user){
+                for (let i = 0; i < whoIsWhere.length; i++) {
+                    if (whoIsWhere[i].id == socket.id) {
+                        console.log(room);
+                        whoIsWhere.splice(i, 1);
+                        console.log(whoIsWhere);
+                        socket.leave(room.channel);
+                        io.to(room.channel).emit("notice", user + " has left");
+                    }
+                }
+            });
+
+            socket.on('disconnect', function(){
+                io.emit('disconnect');
+                for(let i = 0; i < whoIsWhere.length; i++){
+                    if(whoIsWhere[i].id == socket.id){
+                        whoIsWhere.splice(i, 1);
+                    }
+                }
+                io.emit("notice", "A User has disconnected from server... You could be next");
+                console.log("Client Disconnected");
+                console.log(whoIsWhere);
             });
         });
     }

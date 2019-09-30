@@ -15,18 +15,25 @@ export class SocketsService {
     this.socket = io(SERVER_URL);
   }
 
-  joinRoom(room){
-    this.socket.emit("joinRoom", room);
+  joinRoom(room, user){
+    this.socket.emit("joinRoom", room, user);
     console.log('sent');
   }
   
-  newMessage(messageObj) {
-    this.socket.emit('message', messageObj);
+  newMessage(messageObj, location) {
+    this.socket.emit('message', messageObj, location);
   }
 
   getMessage(next){
     this.socket.on('message', (messageObj)=>next(messageObj));
   }
 
+  leaveRoom(room, user){
+    this.socket.emit('leaveRoom', room, user);
+  }
+
+  notice(next){
+    this.socket.on('notice', (res)=>next(res));
+  }
 
 }

@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { DashComponent } from './dash/dash.component';
 import { SocketsService } from './service/sockets.service';
+import { ImgUploadServiceService } from './service/img-upload-service.service';
 
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -24,7 +25,7 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     HttpClientModule
   ],
-  providers: [SocketsService],
+  providers: [SocketsService, ImgUploadServiceService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

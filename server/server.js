@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+const formidable = require("formidable");
+const path = require("path");
 const whitelist = ['http://localhost:4200'];
 const corsOptions = {
   credentials: true, // This is important.
@@ -17,6 +19,8 @@ let ObjectID = require("mongodb").ObjectID;
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 const sockets = require("./socket.js");
+app.use('./images', express.static(path.join(__dirname, './images')));
+app.use(express.static(path.join(__dirname, '../weAreTree/dist/weAreTree')))
 io.set('origins', 'http://localhost:4200');
 
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -64,5 +68,6 @@ MongoClient.connect(url, { poolSize: 10, useNewUrlParser: true, useUnifiedTopolo
     require("./routes/newAssis.js")(app, db);
     require("./routes/newAdmin.js")(app, db);
     require("./routes/fetchMessages.js")(app, db);
+    require("./routes/uploadFile.js")(app, formidable);
 
 });
