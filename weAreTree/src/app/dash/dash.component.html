@@ -660,6 +660,9 @@
               <textarea rows="2" cols="60" [(ngModel)]="newMessage" name="newMessage" class="inp"></textarea><br><br>
               <input style="width: 40%" type="button" class="button" value="Chat" (click)="chat()">
             </form><br><br>
+            <p *ngIf="newMessageError">
+              {{newMessageError}}
+            </p>
             <input type="file" class="inp" (change)="onChatFileSelected($event)" name="chatFile" id="chatFile"><br><br>
             <input type="button" class="button" (click)="uploadChat()" value="Upload Image">
           </div>
@@ -703,4 +706,4 @@
     </div>
   </div>
 </body>
-<img src="{{chatPath}}">
+<img src="images/{{chatPath}}">

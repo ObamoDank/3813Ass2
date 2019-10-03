@@ -28,12 +28,13 @@ export class LoginComponent implements OnInit {
     };
 
     this.http.post<any>(BACKEND_URL + "/checkUser", userObj).subscribe((data) => {
-      if (data) {
+      if (data.pass) {
         this.access = true;
         localStorage.setItem("username", this.username);
         this.router.navigateByUrl("/dash")
-      } else {
-        this.access = false;
+      } else if(data.exists){
+        this.errorMsg = "Your Password is Bad, try again";
+      } else{
         this.errorMsg = "Nah mate you aren't real";
       }
     })

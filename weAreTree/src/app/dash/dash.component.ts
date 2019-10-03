@@ -690,6 +690,7 @@ export class DashComponent implements OnInit {
     });
   }
 
+  // FUnction fetches all messages from database
   async fetchMessages() {
     let messageObj = { "message": "G'day maite could I get some messages over 'ere" };
     await this.http.post<any>(BACKEND_URL + "/fetchMessages", messageObj).subscribe((data) => {
@@ -838,11 +839,13 @@ export class DashComponent implements OnInit {
     this.newMessage = "";
   }
 
+  // Function Changes image selection for user image
   onChatFileSelected(event) {
     console.log(event);
     this.chatFile = event.target.files[0];
   }
 
+  // Function uploads Chat images
   uploadChat() {
     const fd = new FormData()
     fd.append('image', this.chatFile, this.chatFile.name);
@@ -852,11 +855,13 @@ export class DashComponent implements OnInit {
     })
   }
 
+  // Function Changes image selection for user image
   onUserFileSelected(event) {
     console.log(event);
     this.chatFile = event.target.files[0];
   }
 
+  // Function Uploads User Images
   uploadUser() {
     const fd = new FormData()
     fd.append('image', this.userFile, this.userFile.name);
