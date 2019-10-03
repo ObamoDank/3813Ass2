@@ -649,7 +649,7 @@
             <p *ngIf="notice">{{notice}}</p>
           </div>
           <div class="chatMidLeft">
-            <ul>
+            <ul class="chatList">
               <li *ngFor="let message of roomMessages">
                 {{message.user}} -- {{message.msg}}
               </li>

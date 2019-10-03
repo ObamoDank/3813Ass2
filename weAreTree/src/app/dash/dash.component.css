@@ -176,6 +176,12 @@ form{
     border-radius: 10px;
     max-height: 30rem;
     height: 70%;
+    overflow: auto;
+}
+
+.chatList {
+    list-style-type: none;
+    text-align: left;
 }
 
 .chatRight {

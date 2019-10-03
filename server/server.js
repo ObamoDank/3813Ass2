@@ -2,11 +2,13 @@ const express = require("express");
 const app = express();
 const formidable = require("formidable");
 const path = require("path");
-const whitelist = ['http://localhost:4200'];
-const corsOptions = {
-  credentials: true, // This is important.
+
+
+const whitelist = ['http://localhost:4200']; // Set a whitelist of routes
+const corsOptions = {   // Create Object with options to change within Cors
+  credentials: true,
   origin: (origin, callback) => {
-    if(whitelist.includes(origin))
+    if(whitelist.includes(origin)) // <----------- Whitelist
       return callback(null, true)
 
       callback(new Error('Not allowed by CORS'));
@@ -17,16 +19,16 @@ const bodyparser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 let ObjectID = require("mongodb").ObjectID;
 const http = require("http").Server(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http); //<----------- Socket Standard require
 const sockets = require("./socket.js");
 app.use('./images', express.static(path.join(__dirname, './images')));
 app.use(express.static(path.join(__dirname, '../weAreTree/dist/weAreTree')))
-io.set('origins', 'http://localhost:4200');
+io.set('origins', 'http://localhost:4200'); // <-------------- Set io origin
 
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
-app.use(cors());
-app.use(function (req, res, next) {
+app.use(cors());  // <---------------- Use Cors
+app.use(function (req, res, next) { 
     res.header("Access-Control-Allow-Origin", "http://localhost:4200");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT ,DELETE");
     res.header(
