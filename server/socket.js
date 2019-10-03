@@ -18,11 +18,14 @@ module.exports = {
 
             // Function recieves and emits message before adding to database
             socket.on("message", (messageObj, location) => {
-                for (i = 0; i < whoIsWhere.length; i++) {
-                    if (whoIsWhere[i].id == socket.id) {
-                        io.to(location.channel).emit('message', messageObj);
-                    }
-                }
+                io.emit('message', messageObj);
+
+                // for (i = 0; i < whoIsWhere.length; i++) {
+                //     if (whoIsWhere[i].id == socket.id) {
+                //         io.to(location.channel).emit('message', messageObj);
+                //     }
+                // }
+                
                 messageData.insertOne(messageObj);
             });
 
@@ -50,7 +53,7 @@ module.exports = {
                 });
             });
 
-            socket.on("leaveRoom", function (room, user){
+            socket.on("leaveRoom", function (room, user) {
                 for (let i = 0; i < whoIsWhere.length; i++) {
                     if (whoIsWhere[i].id == socket.id) {
                         console.log(room);
@@ -62,10 +65,10 @@ module.exports = {
                 }
             });
 
-            socket.on('disconnect', function(){
+            socket.on('disconnect', function () {
                 io.emit('disconnect');
-                for(let i = 0; i < whoIsWhere.length; i++){
-                    if(whoIsWhere[i].id == socket.id){
+                for (let i = 0; i < whoIsWhere.length; i++) {
+                    if (whoIsWhere[i].id == socket.id) {
                         whoIsWhere.splice(i, 1);
                     }
                 }

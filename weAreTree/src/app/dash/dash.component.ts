@@ -690,7 +690,7 @@ export class DashComponent implements OnInit {
     });
   }
 
-  // FUnction fetches all messages from database
+  // Function fetches all messages from database
   async fetchMessages() {
     let messageObj = { "message": "G'day maite could I get some messages over 'ere" };
     await this.http.post<any>(BACKEND_URL + "/fetchMessages", messageObj).subscribe((data) => {
@@ -706,7 +706,10 @@ export class DashComponent implements OnInit {
     this.socketService.initSocket();
     this.socketService.getMessage((msg) => {
       this.messages.push(msg);
-      this.roomMessages.push(msg);
+      if(msg.channel == this.currentChannel){
+        this.roomMessages.push(msg);
+      }
+      // this.roomMessages.push(msg);
     });
     this.socketService.notice((msg) => {
       this.notice = msg;
